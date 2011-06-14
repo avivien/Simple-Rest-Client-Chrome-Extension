@@ -122,15 +122,29 @@ function readResponse() {
       if(this.status == 0) {
         throw('Status = 0');
       }
+      var content_type = this.getResponseHeader('Content-Type');
+      var content_length = this.getResponseHeader('Content-Length');
+      console.log(content_length);
       $("#responseStatus").html(this.status+' '+statusCodes[this.status]);
       $("#responseHeaders").val(jQuery.trim(this.getAllResponseHeaders()));
       var debugurl = /X-Debug-URL: (.*)/i.exec($("#responseHeaders").val());
       if (debugurl) {
-	  $("#debugLink").attr('href', debugurl[1]).html(debugurl[1]);
-	  $("#debugLinks").css("display", "");
+        $("#debugLink").attr('href', debugurl[1]).html(debugurl[1]);
+        $("#debugLinks").css("display", "");
       }
-      $("#codeData").html(jQuery.trim(this.responseText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
-
+      if(content_type.match('^image\/')) {
+        var image_response = new Image();
+        /*var myCanvas = document.createElement("canvas");
+        var myCanvasContext = myCanvas.getContext("2d");
+        image_response.onload = function(){
+          myCanvasContext.drawImage(image_response, 0, 0);
+        }
+        $("#codeData").append(myCanvas);*/
+        image_response.src = $("#url").val();
+        $("#codeData").append(image_response);
+      } else {
+        $("#codeData").html(jQuery.trim(this.responseText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+      }
       $("#respHeaders").css("display", "");
       $("#respData").css("display", "");
 
@@ -144,6 +158,7 @@ function readResponse() {
       var $chili = $('#codeData').chili();
     }
     catch(e) {
+      console.log(e);
       $("#responseStatus").html("No response.");
       $("#respHeaders").css("display", "none");
       $("#respData").css("display", "none");
