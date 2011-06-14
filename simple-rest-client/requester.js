@@ -134,12 +134,6 @@ function readResponse() {
       }
       if(content_type.match('^image\/')) {
         var image_response = new Image();
-        /*var myCanvas = document.createElement("canvas");
-        var myCanvasContext = myCanvas.getContext("2d");
-        image_response.onload = function(){
-          myCanvasContext.drawImage(image_response, 0, 0);
-        }
-        $("#codeData").append(myCanvas);*/
         image_response.src = $("#url").val();
         $("#codeData").append(image_response);
       } else {
