@@ -125,7 +125,7 @@ function readResponse() {
       var content_type = this.getResponseHeader('Content-Type');
       var content_length = this.getResponseHeader('Content-Length');
       console.log(content_length);
-      $("#responseStatus").html(this.status+' '+statusCodes[this.status]);
+      $("#responseStatus").html(this.status+' '+(this.statusText || statusCodes[this.status]));
       $("#responseHeaders").val(jQuery.trim(this.getAllResponseHeaders()));
       var debugurl = /X-Debug-URL: (.*)/i.exec($("#responseHeaders").val());
       if (debugurl) {
