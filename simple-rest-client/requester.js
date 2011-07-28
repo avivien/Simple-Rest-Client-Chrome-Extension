@@ -47,6 +47,10 @@ statusCodes[503] = 'Service Unavailable';
 statusCodes[504] = 'Gateway Time-out';
 statusCodes[505] = 'HTTP Version not supported';
 
+window.onbeforeunload = function(){
+  return 'you dont wanna leave do you?';
+}
+
 function grow(id) {
   var textarea = document.getElementById(id);
   var newHeight = textarea.scrollHeight;
@@ -75,24 +79,37 @@ function clearFields() {
 }
 
 function sendRequest() {
+  var url, xhr, method, headers, header, params, requestHeaders, requestHeader;
   clearFields();
-  if($("#url").val() != "") {
-    var xhr = new XMLHttpRequest();
+  url = $("#url").val();
+  if(url != "") {
+    xhr = new XMLHttpRequest();
     xhr.onreadystatechange = readResponse;
+    method = $("input[type=radio]:checked").val().toUpperCase();
+    params = $("#postputdata").val();
+    requestHeaders = {};
+    
+    // parse out the user-supplied request headers
+    headers = $("#headers").val().split("\n");
+    for (var i = 0; i < headers.length; i++) {
+      header = headers[i].split(": ");
+      if (header[1]) {
+        requestHeaders[header[0]] = header[1];
+      }
+    }
     try {
-      xhr.open($("input[type=radio]:checked").val(), $("#url").val(), true);
-      var headers = $("#headers").val();
-      headers = headers.split("\n");
-      for (var i = 0; i < headers.length; i++) {
-        var header = headers[i].split(": ");
-        if (header[1])
-            xhr.setRequestHeader(header[0],header[1]);
+      xhr.open(method, url, true);
+      // if POST or PUT, set headers about form data, if there is any
+      if (params.length && (method == 'POST' || method == 'PUT')) {
+        requestHeaders["Content-type"] = "application/x-www-form-urlencoded";
+        requestHeaders["Content-length"] = params.length;
+        requestHeaders["Connection"] = "close";
       }
-      if(jQuery.inArray($("input[type=radio]:checked").val(), ["post", "put"]) > -1) {
-        xhr.send($("#postputdata").val());
-      } else {
-        xhr.send("");
+      // set the headers
+      for (requestHeader in requestHeaders) {
+        xhr.setRequestHeader(requestHeader, requestHeaders[requestHeader]);
       }
+      xhr.send(params);
     }
     catch(e){
       console.log(e);
@@ -136,8 +153,14 @@ function readResponse() {
         var image_response = new Image();
         image_response.src = $("#url").val();
         $("#codeData").append(image_response);
+        $('#respText').html('');
       } else {
         $("#codeData").html(jQuery.trim(this.responseText).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+        try {
+          $('#respText').html($(this.responseText).text().replace(/\n/g,'<br/>'));
+        } catch (e) {
+          $('#respText').html('');
+        }
       }
       $("#respHeaders").css("display", "");
       $("#respData").css("display", "");
